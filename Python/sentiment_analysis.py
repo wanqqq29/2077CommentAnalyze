@@ -38,7 +38,7 @@ def ensure_data(data_name, data_url):
 
 
 # 中文情感挖掘语料-ChnSentiCorp 谭松波
-chn_senti_corp = ensure_data("review", "http://file.hankcs.com/corpus/ChnSentiCorp.zip")
+chn_senti_corp = ensure_data("reviews", "http://file.hankcs.com/corpus/ChnSentiCorp.zip")
 
 ## ===============================================
 ## 以下开始 情感分析
@@ -47,9 +47,19 @@ chn_senti_corp = ensure_data("review", "http://file.hankcs.com/corpus/ChnSentiCo
 IClassifier = JClass('com.hankcs.hanlp.classification.classifiers.IClassifier')
 NaiveBayesClassifier = JClass('com.hankcs.hanlp.classification.classifiers.NaiveBayesClassifier')
 
+neg = 0
+pos = 0
 
 def predict(classifier, text):
+    global neg
+    global pos
     print("《%s》 情感极性是 【%s】" % (text, classifier.classify(text)))
+    print(classifier.classify(text))
+    if classifier.classify(text) == '不推荐':
+        neg += 1
+    elif classifier.classify(text) == '推荐':
+        pos += 1
+
 
 
 if __name__ == '__main__':
