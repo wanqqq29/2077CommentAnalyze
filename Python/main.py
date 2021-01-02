@@ -1,14 +1,15 @@
 import requests
 from urllib import parse
-import json,re,csv,time,os
+import json, re, csv, time, os
 import pandas as pd
 from Python import sentiment_analysis as sa
 import jieba
 import collections
 import webbrowser
 from pyecharts import options as opts
-from pyecharts.charts import WordCloud
-from pyecharts.charts import Gauge
+from pyecharts.charts import WordCloud, Gauge, Grid, Pie
+
+
 headers = {
         'User-Agent': 'Mozilla/4.-1 (X10; Linux x85_63) AppleWebKit/536.35 (KHTML, like Gecko) Chrome/60.-1.3162.99 Safari/536.35'}
 
@@ -44,16 +45,16 @@ def Get_train(appid):
                     with open(r'C:\Users\Aris\AppData\Local\Programs\Python\Python38\Lib\site-packages\pyhanlp\static\data\test\reviews/推荐/pos.' + str(total_reviews_up) + '.txt', 'w', encoding='utf-8') as f:
                         f.write(one_review_over)
                     total_reviews_up += 1
+                    with open('reviews/pos.txt', 'w+', encoding='utf-8') as f:
+                        f.write(str(total_reviews_up))
                 elif Content['reviews'][b]['voted_up'] == False:
                     one_review = Content['reviews'][b]['review']
                     one_review_over = re.compile('\[h1]|\[/h1]|\n|\t|\[b]|\[/b]', re.I).sub('', one_review)
                     with open(r'C:\Users\Aris\AppData\Local\Programs\Python\Python38\Lib\site-packages\pyhanlp\static\data\test\reviews/不推荐/neg.' + str(total_reviews_down) + '.txt', 'w', encoding='utf-8') as f:
                         f.write(one_review_over)
                     total_reviews_down += 1
-            with open('reviews/pos.txt', 'w+', encoding='utf-8') as f:
-                f.write(str(total_reviews_up))
-            with open('reviews/neg.txt', 'w+', encoding='utf-8') as f:
-                f.write(str(total_reviews_down))
+                    with open('reviews/neg.txt', 'w+', encoding='utf-8') as f:
+                        f.write(str(total_reviews_down))
             print(total_reviews_up)
             print(total_reviews_down)
             flag = 1
@@ -163,33 +164,49 @@ def Clear_review():
     # keep: {‘first’, ‘last’, False}, default ‘first’ 删除重复项并保留第一次出现的项
     # inplace: boolean, default False 是直接在原来数据上修改还是保留一个副本
     # 数据存入txt
-    # text = ''
-    # reviews = pd.read_csv('reviews_over.csv', engine='python', header=None, encoding='utf-8')  # pd读取处理完的评论
-    # for xxx in range(0, len(reviews)):
-    #     text = text + reviews[0][xxx]+ '\n'
-    # with open('reviews_over.txt', 'w', encoding='UTF-8') as f:  # 设置文件对象
-    #     f.write(text)  # 将字符串写入文件中
+    text = ''
+    reviews = pd.read_csv('reviews_over.csv', engine='python', header=None, encoding='utf-8')  # pd读取处理完的评论
+    for xxx in range(0, len(reviews)):
+        text = text + reviews[0][xxx]+ '\n'
+    with open('reviews_over.txt', 'w', encoding='UTF-8') as f:  # 设置文件对象
+        f.write(text)  # 将字符串写入文件中
 # 训练
 def Training():
     classifier = sa.NaiveBayesClassifier()  # 创建分类器，更高级的功能请参考IClassifier的接口定义
     classifier.train(sa.chn_senti_corp)  # 训练后的模型支持持久化，下次就不必训练了
     return classifier
 
+
+
 # 应用模型对爬取的评论进行分析
 def Predict(classifier):
     reviews = pd.read_csv('reviews_over.csv', engine='python', header=None, encoding='utf-8') #pd读取处理完的评论
     for xx in range(0,len(reviews)):
         sa.predict(classifier,reviews[0][xx])
-    print('有'+str(sa.pos)+'人,'+str(sa.pos/(sa.pos+sa.neg))+'%,''的人推荐购买这个游戏,'+str(sa.neg)+'人,'+str(sa.neg/(sa.pos+sa.neg))+'%的人不推荐购买这个游戏,')
+    print('有'+str(sa.pos)+'人,'+str(sa.pos/(sa.pos+sa.neg)*100)+'%,''的人推荐购买这个游戏,'+str(sa.neg)+'人,'+str(sa.neg/(sa.pos+sa.neg)*100)+'%的人不推荐购买这个游戏,')
     if sa.pos > sa.neg:
         print('总之，这个游戏买就对了，绝对不亏！')
     else:
-        print('买前请三思，推荐度仅为'+str(sa.pos/(sa.pos+sa.neg))+'%')
+        print('买前请三思，推荐度仅为'+str(sa.pos/(sa.pos+sa.neg)*100)+'%')
 
 
 
 #可视化
 def Pycharts():
+    with open('reviews/pos.txt', "r") as f:  # 训练集可持续化，读取上次写文件名，这次接着来
+        total_reviews_ups = f.read()
+    if total_reviews_ups == '':
+        print('请爬取训练集')
+    else:
+        total_reviews_up = int(total_reviews_ups)
+    with open('reviews/neg.txt', "r") as f:  # 训练集可持续化
+        total_reviews_downs = f.read()
+    if total_reviews_downs == '':
+        print('请爬取训练集')
+    else:
+        total_reviews_down = int(total_reviews_downs)
+
+
     file = open('reviews_over.txt', 'r', encoding='UTF-8')  # 路径自定义
     text = file.read()
     file.close()
@@ -223,26 +240,57 @@ def Pycharts():
                 title="词频统计", title_textstyle_opts=opts.TextStyleOpts(font_size=23)
             ),
             tooltip_opts=opts.TooltipOpts(is_show=True),
-        )
+            )
             .render("html/wordcloud_diamond.html")
     )
 
-    gauge = (
+    UP = (
         Gauge(init_opts=opts.InitOpts(width="500px", height="500px"))
-                    .add(series_name="推荐指数", data_pair=[["推荐率", sa.pos/(sa.pos+sa.neg)]])
-                    .set_global_opts(
-                    legend_opts=opts.LegendOpts(is_show=False),
-                    tooltip_opts=opts.TooltipOpts(is_show=True, formatter="{a} <br/>{b} : {c}%"),
-                )
-                    .set_series_opts(
-                    axisline_opts=opts.AxisLineOpts(
-                        linestyle_opts=opts.LineStyleOpts(
-                            color=[[0.3, "#67e0e3"], [0.7, "#37a2da"], [1, "#fd666d"]], width=30
-                        )
-                    )
-                )
-                    .render("html/gauge_change_color.html")
+            .add(series_name="推荐指数", data_pair=[["", sa.pos/(sa.pos+sa.neg)*100]],
+                 title_label_opts=opts.LabelOpts(font_size=40, color="blue", font_family="Microsoft YaHei"),
+                 )
+            .set_global_opts(
+            legend_opts=opts.LegendOpts(is_show=False),
+            tooltip_opts=opts.TooltipOpts(is_show=True, formatter="{a} <br/>{b} : {c}%"),
+        )
+            .set_series_opts(axisline_opts=opts.AxisLineOpts(
+            linestyle_opts=opts.LineStyleOpts(color=[[0.3, "#67e0e3"], [0.7, "#37a2da"], [1, "#fd666d"]], width=30)
+        )
+        )
+            .render("html/gauge_up.html")
     )
+
+    DOWN = (
+        Gauge(init_opts=opts.InitOpts(width="500px", height="500px"))
+            .add(series_name="推荐指数", data_pair=[["", sa.neg/(sa.pos+sa.neg)*100]],
+                 title_label_opts=opts.LabelOpts(font_size=40, color="blue", font_family="Microsoft YaHei"),
+                 )
+            .set_global_opts(
+            legend_opts=opts.LegendOpts(is_show=False),
+            tooltip_opts=opts.TooltipOpts(is_show=True, formatter="{a} <br/>{b} : {c}%"),
+        )
+            .set_series_opts(axisline_opts=opts.AxisLineOpts(
+            linestyle_opts=opts.LineStyleOpts(color=[[0.3, "#67e0e3"], [0.7, "#37a2da"], [1, "#fd666d"]], width=30)
+            )
+                             )
+            .render("html/gauge_down.html")
+    )
+
+    pie = (
+        Pie()
+            .add(
+            "1",
+            [['正面训练集数量',total_reviews_up ], ['负面训练集数量', total_reviews_down]],
+            radius=["40%", "75%"],
+            )
+            .set_global_opts(
+            title_opts=opts.TitleOpts(title="Pie-Radius"),
+            legend_opts=opts.LegendOpts(orient="vertical", pos_top="15%", pos_left="2%"),
+            )
+            .set_series_opts(label_opts=opts.LabelOpts(formatter="{b}: {c}"))
+            .render("html/Train.html")
+    )
+
 
     webbrowser.open('file:///F:/Project/WorkSpace/2077CommentAnalyze/Python/html/index.html')
 

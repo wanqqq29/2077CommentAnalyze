@@ -39,6 +39,7 @@ def ensure_data(data_name, data_url):
 
 # 中文情感挖掘语料-ChnSentiCorp 谭松波
 chn_senti_corp = ensure_data("reviews", "http://file.hankcs.com/corpus/ChnSentiCorp.zip")
+#chn_senti_corp = ensure_data("reviews", "http://file.hankcs.com/corpus/ChnSentiCorp.zip")
 
 ## ===============================================
 ## 以下开始 情感分析
@@ -53,8 +54,8 @@ pos = 0
 def predict(classifier, text):
     global neg
     global pos
-    print("《%s》 情感极性是 【%s】" % (text, classifier.classify(text)))
-    print(classifier.classify(text))
+    #print("《%s》 情感极性是 【%s】" % (text, classifier.classify(text)))
+    #print(classifier.classify(text))
     if classifier.classify(text) == '不推荐':
         neg += 1
     elif classifier.classify(text) == '推荐':
@@ -67,6 +68,4 @@ if __name__ == '__main__':
     #  创建分类器，更高级的功能请参考IClassifier的接口定义
     classifier.train(chn_senti_corp)
     #  训练后的模型支持持久化，下次就不必训练了
-    predict(classifier, "非常非常令人失望，玩法缩得就剩个宣传片，剧情薄的像张纸，之前所有的宣传所以的预告跟这游戏只有表面关系，蠢驴这波是真的蠢，单机游戏都没做好却几乎把全部的精力用在以后的线上模式，或许期待的玩法能在线上实现，但单机？一万个mod都没用，想学GTA ,东施效颦，邯郸学步")
-    predict(classifier, "有问题解决了的话还是选择记录下来吧")
-    predict(classifier, "可利用文本分类实现情感分析，效果不是不行")
+    #predict(classifier, "(''垃圾''")

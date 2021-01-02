@@ -2,16 +2,32 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>推荐指数</title>
+    <title>Title</title>
+    <style>
+        iframe{
+            height: 900px;
+            width: 49%;
+
+        }
+        .aaa{
+            width: 49%;
+            height: 50px;
+            float: left;
+            padding-left: 210px;
+            box-sizing: border-box
+        }
+    </style>
 </head>
 <body>
-
-grid = (
-    Grid()
-    .add(bar, grid_opts=opts.GridOpts(pos_top="50%", pos_right="75%"))
-    .add(geo, grid_opts=opts.GridOpts(pos_left="60%"))
-    .render("grid_geo_bar.html")
-)
-
+<div>
+    <div class="aaa">
+        <h1>推荐指数</h1>
+    </div>
+    <div class="aaa">
+        <h1>不推荐指数</h1>
+    </div>
+</div>
+<iframe src="gauge_up.html" frameborder="no"></iframe>
+<iframe src="gauge_down.html" frameborder="no"></iframe>
 </body>
 </html>
