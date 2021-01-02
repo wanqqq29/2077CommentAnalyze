@@ -253,13 +253,13 @@ def Pycharts():
 
 
 if __name__ == '__main__':
-    Get_train(1174180)
+    #Get_train(1174180)
     #Get_review(1091500) # 评论爬取
     #Clear_review()  # 去重
-    # 进行推荐度分析：
-    #classifier = Training()
-    #Predict(classifier)
-    #Pycharts() #生成可视化图表
+    #进行推荐度分析：
+    classifier = Training()
+    Predict(classifier)
+    Pycharts() #生成可视化图表
 
 
 
