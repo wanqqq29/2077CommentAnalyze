@@ -37,7 +37,6 @@ def ensure_data(data_name, data_url):
     return dest_path
 
 
-# 中文情感挖掘语料-ChnSentiCorp 谭松波
 chn_senti_corp = ensure_data("reviews", "http://file.hankcs.com/corpus/ChnSentiCorp.zip")
 #chn_senti_corp = ensure_data("reviews", "http://file.hankcs.com/corpus/ChnSentiCorp.zip")
 

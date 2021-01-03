@@ -7,7 +7,7 @@ import jieba
 import collections
 import webbrowser
 from pyecharts import options as opts
-from pyecharts.charts import WordCloud, Gauge, Grid, Pie, Bar
+from pyecharts.charts import WordCloud, Gauge, Pie, Bar
 
 
 headers = {
@@ -70,7 +70,7 @@ def Get_train(appid):
             print(total_reviews_down)
             flag = 1
         elif flag == 1:
-            for c in range(2, 50): #爬取页数
+            for c in range(2, Pagenum-2): #爬取页数
                 url = 'https://store.steampowered.com/appreviews/%s?json=1&language=schinese&num_per_page=100&cursor=%s' %(appid, cursor)
                 #url = 'https://store.steampowered.com/appreviews/%s?json=1&language=schinese&num_per_page=100&review_type=negative&cursor=%s' %(appid, cursor)
                 page = requests.get(url, headers=headers).text.encode('utf-8')
@@ -124,9 +124,7 @@ def Get_review(appid):
             total_reviews = []
             for b in range(0,len(Content['reviews'])):
                 one_review = Content['reviews'][b]['review']
-                one_review_over = re.compile('\[h1]|\[/h1]|\n|\t|\[b]|\[/b]', re.I).sub('',one_review)  #正则处理单条评论
-                #one_review_over = re.compile('[b]',re.I).sub('',one_review_over)
-                #one_review_over = re.compile('[/b]',re.I).sub('',one_review_over)
+                one_review_over = re.compile('\[h1]|\[/h1]|\n|\t|\[b]|\[/b]', re.I).sub('', one_review)  #正则处理单条评论
                 total_reviews.append(one_review_over)  #将评论加入总评论列表
             print('第1页评论爬取完成')
             # print(total_reviews)
@@ -150,7 +148,8 @@ def Get_review(appid):
                     total_reviews = []
                     for b in range(0,len(Content['reviews'])):
                         one_review = Content['reviews'][b]['review']
-                        one_review_over = re.compile('\n', re.I).sub('', one_review)        #正则处理单条评论
+                        one_review_over = re.compile('\[h1]|\[/h1]|\n|\t|\[b]|\[/b]', re.I).sub('', one_review)  # 正则处理单条评论
+
                         total_reviews.append(one_review_over)  # 将评论加入总评论列表
                     print('第' + str(c) + '页评论爬取完成')
                     # print(total_reviews)
@@ -201,6 +200,7 @@ def Clear_review():
     datad = framed.drop_duplicates(keep='first', inplace=False)
     datad.to_csv('reviews/pos_test_over.csv', encoding='utf8', index=None)
     print('测试集处理完成')
+
 # 训练
 def Training():
     classifier = sa.NaiveBayesClassifier()  # 创建分类器，更高级的功能请参考IClassifier的接口定义
@@ -220,7 +220,7 @@ def Predict(classifier):
     else:
         print('不推荐购买，推荐度仅为'+str(sa.pos/(sa.pos+sa.neg)*100)+'%')
 
-#测试
+#测试评估
 def Predict_test(classifier):
     global totneg
     global totpos
@@ -247,7 +247,6 @@ def Predict_test(classifier):
     totneg = len(reviews_neg_test)
     Recommend = totpos + totneg
     RecommendCent = (negpic+pospic)/(totpos+totneg)*100
-
 
 #可视化
 def Pycharts():
@@ -364,7 +363,7 @@ def Pycharts():
 if __name__ == '__main__':
     #Get_train(646910)
     #Get_review(1091500) # 评论爬取
-    #Clear_review()  # 去重
+    #Clear_review()  # 去重x
     #进行推荐度分析：
     classifier = Training()
     Predict_test(classifier) #进行数据评价
