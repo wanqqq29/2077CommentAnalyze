@@ -7,7 +7,7 @@ import jieba
 import collections
 import webbrowser
 from pyecharts import options as opts
-from pyecharts.charts import WordCloud, Gauge, Grid, Pie
+from pyecharts.charts import WordCloud, Gauge, Grid, Pie, Bar
 
 
 headers = {
@@ -44,11 +44,11 @@ def Get_train(appid):
                     if Content['reviews'][b]['voted_up'] == True:
                         with open('reviews/pos_test.csv', 'a+', encoding='utf-8', newline='') as f:
                             writer = csv.writer(f)
-                            writer.writerow(Content['reviews'][b]['review'])
+                            writer.writerow([Content['reviews'][b]['review']])
                     elif Content['reviews'][b]['voted_up'] == False:
                         with open('reviews/neg_test.csv', 'a+', encoding='utf-8', newline='') as f:
                             writer = csv.writer(f)
-                            writer.writerow(Content['reviews'][b]['review'])
+                            writer.writerow([Content['reviews'][b]['review']])
                 else:
                     if Content['reviews'][b]['voted_up'] == True:
                         one_review = Content['reviews'][b]['review']
@@ -82,11 +82,11 @@ def Get_train(appid):
                         if Content['reviews'][b]['voted_up'] == True:
                             with open('reviews/pos_test.csv', 'a+', encoding='utf-8', newline='') as f:
                                 writer = csv.writer(f)
-                                writer.writerow(Content['reviews'][b]['review'])
+                                writer.writerow([Content['reviews'][b]['review']])
                         elif Content['reviews'][b]['voted_up'] == False:
                             with open('reviews/neg_test.csv', 'a+', encoding='utf-8', newline='') as f:
                                 writer = csv.writer(f)
-                                writer.writerow(Content['reviews'][b]['review'])
+                                writer.writerow([Content['reviews'][b]['review']])
                     else:
                         if Content['reviews'][b]['voted_up'] == True:
                             one_review = Content['reviews'][b]['review']
@@ -177,11 +177,11 @@ def Get_review(appid):
 # 评论处理 去重
 def Clear_review():
     frame = pd.read_csv('reviews.csv', engine='python')
-    print('处理前数量' + str(len(frame)))
+    print('数据集处理前数量' + str(len(frame)))
     data = frame.drop_duplicates(keep='first', inplace=False)
     data.to_csv('reviews_over.csv', encoding='utf8',index=None)
     frame2 = pd.read_csv('reviews_over.csv', engine='python')
-    print('处理后数量' + str(len(frame2)))
+    print('数据集处理后数量' + str(len(frame2)))
     # subset: column label or sequence of labels, optional    用来指定特定的列，默认所有列
     # keep: {‘first’, ‘last’, False}, default ‘first’ 删除重复项并保留第一次出现的项
     # inplace: boolean, default False 是直接在原来数据上修改还是保留一个副本
@@ -192,7 +192,15 @@ def Clear_review():
         text = text + reviews[0][xxx]+ '\n'
     with open('reviews_over.txt', 'w', encoding='UTF-8') as f:  # 设置文件对象
         f.write(text)  # 将字符串写入文件中
+    #测试集去重
+    frameu = pd.read_csv('reviews/neg_test.csv', engine='python')
+    datau = frameu.drop_duplicates(keep='first', inplace=False)
+    datau.to_csv('reviews/neg_test_over.csv', encoding='utf8', index=None)
 
+    framed = pd.read_csv('reviews/pos_test.csv', engine='python')
+    datad = framed.drop_duplicates(keep='first', inplace=False)
+    datad.to_csv('reviews/pos_test_over.csv', encoding='utf8', index=None)
+    print('测试集处理完成')
 # 训练
 def Training():
     classifier = sa.NaiveBayesClassifier()  # 创建分类器，更高级的功能请参考IClassifier的接口定义
@@ -212,7 +220,33 @@ def Predict(classifier):
     else:
         print('不推荐购买，推荐度仅为'+str(sa.pos/(sa.pos+sa.neg)*100)+'%')
 
-#def Predict_test(classifier):
+#测试
+def Predict_test(classifier):
+    global totneg
+    global totpos
+    global pospic
+    global negpic
+    global RecommendCent
+    pospic = 0
+    negpic = 0
+    postestCent = 0
+    negtestCent = 0
+    reviews_pos_test = pd.read_csv('reviews/pos_test_over.csv', engine='python', header=None, encoding='utf-8')  # pd读取处理完的评论
+    for posx in range(0,len(reviews_pos_test)):
+        sa.predict(classifier,reviews_pos_test[0][posx])
+        if sa.textaaa == '推荐':
+            pospic += 1
+    postestCent = pospic/len(reviews_pos_test)*100
+    totpos = len(reviews_pos_test)
+    reviews_neg_test = pd.read_csv('reviews/neg_test_over.csv', engine='python', header=None, encoding='utf-8')  # pd读取处理完的评论
+    for posxx in range(0,len(reviews_neg_test)):
+        sa.predict(classifier,reviews_neg_test[0][posxx])
+        if sa.textaaa == '不推荐':
+            negpic += 1
+    negtestCent = negpic/len(reviews_neg_test)*100
+    totneg = len(reviews_neg_test)
+    Recommend = totpos + totneg
+    RecommendCent = (negpic+pospic)/(totpos+totneg)*100
 
 
 #可视化
@@ -312,19 +346,28 @@ def Pycharts():
             legend_opts=opts.LegendOpts(orient="vertical", pos_top="15%", pos_left="2%"),
             )
             .set_series_opts(label_opts=opts.LabelOpts(formatter="{b}: {c}"))
-            .render("html/Train.html")
+            .render("html/pie.html")
     )
 
+    bar = (
+        Bar()
+            .add_xaxis(['推荐', '不推荐'])
+            .add_yaxis("识别成功", [pospic,negpic], stack="stack1")
+            .add_yaxis("识别失败", [totpos-pospic,totneg-negpic], stack="stack1")
+            .set_series_opts(label_opts=opts.LabelOpts(is_show=False))
+            .set_global_opts(title_opts=opts.TitleOpts(title="准确度为%s" %str(RecommendCent)))
+            .render("html/bar.html")
+    )
 
     webbrowser.open('file:///F:/Project/WorkSpace/2077CommentAnalyze/Python/html/index.html')
 
 if __name__ == '__main__':
-    #Get_train(271590)
+    #Get_train(646910)
     #Get_review(1091500) # 评论爬取
     #Clear_review()  # 去重
     #进行推荐度分析：
     classifier = Training()
-    #Predict_test(classifier) #进行数据评价
+    Predict_test(classifier) #进行数据评价
     Predict(classifier)  #应用模型进行分析
     Pycharts() #生成可视化图表
 

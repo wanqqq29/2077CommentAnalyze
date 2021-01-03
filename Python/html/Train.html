@@ -1,131 +1,19 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Awesome-pyecharts</title>
-            <script type="text/javascript" src="https://assets.pyecharts.org/assets/echarts.min.js"></script>
+    <title>Title</title>
+    <style>
+        iframe{
+            height: 900px;
+            width: 49%;
 
+        }
+
+    </style>
 </head>
 <body>
-    <div id="45c2e286a37d425196ec70b8c5bd012b" class="chart-container" style="width:900px; height:500px;"></div>
-    <script>
-        var chart_45c2e286a37d425196ec70b8c5bd012b = echarts.init(
-            document.getElementById('45c2e286a37d425196ec70b8c5bd012b'), 'white', {renderer: 'canvas'});
-        var option_45c2e286a37d425196ec70b8c5bd012b = {
-    "animation": true,
-    "animationThreshold": 2000,
-    "animationDuration": 1000,
-    "animationEasing": "cubicOut",
-    "animationDelay": 0,
-    "animationDurationUpdate": 300,
-    "animationEasingUpdate": "cubicOut",
-    "animationDelayUpdate": 0,
-    "color": [
-        "#c23531",
-        "#2f4554",
-        "#61a0a8",
-        "#d48265",
-        "#749f83",
-        "#ca8622",
-        "#bda29a",
-        "#6e7074",
-        "#546570",
-        "#c4ccd3",
-        "#f05b72",
-        "#ef5b9c",
-        "#f47920",
-        "#905a3d",
-        "#fab27b",
-        "#2a5caa",
-        "#444693",
-        "#726930",
-        "#b2d235",
-        "#6d8346",
-        "#ac6767",
-        "#1d953f",
-        "#6950a1",
-        "#918597"
-    ],
-    "series": [
-        {
-            "type": "pie",
-            "name": "1",
-            "clockwise": true,
-            "data": [
-                {
-                    "name": "\u6b63\u9762\u8bad\u7ec3\u96c6\u6570\u91cf",
-                    "value": 3958
-                },
-                {
-                    "name": "\u8d1f\u9762\u8bad\u7ec3\u96c6\u6570\u91cf",
-                    "value": 3594
-                }
-            ],
-            "radius": [
-                "40%",
-                "75%"
-            ],
-            "center": [
-                "50%",
-                "50%"
-            ],
-            "label": {
-                "show": true,
-                "position": "top",
-                "margin": 8,
-                "formatter": "{b}: {c}"
-            },
-            "rippleEffect": {
-                "show": true,
-                "brushType": "stroke",
-                "scale": 2.5,
-                "period": 4
-            }
-        }
-    ],
-    "legend": [
-        {
-            "data": [
-                "\u6b63\u9762\u8bad\u7ec3\u96c6\u6570\u91cf",
-                "\u8d1f\u9762\u8bad\u7ec3\u96c6\u6570\u91cf"
-            ],
-            "selected": {},
-            "show": true,
-            "left": "2%",
-            "top": "15%",
-            "orient": "vertical",
-            "padding": 5,
-            "itemGap": 10,
-            "itemWidth": 25,
-            "itemHeight": 14
-        }
-    ],
-    "tooltip": {
-        "show": true,
-        "trigger": "item",
-        "triggerOn": "mousemove|click",
-        "axisPointer": {
-            "type": "line"
-        },
-        "showContent": true,
-        "alwaysShowContent": false,
-        "showDelay": 0,
-        "hideDelay": 100,
-        "textStyle": {
-            "fontSize": 14
-        },
-        "borderWidth": 0,
-        "padding": 5
-    },
-    "title": [
-        {
-            "text": "Pie-Radius",
-            "padding": 5,
-            "itemGap": 10
-        }
-    ]
-};
-        chart_45c2e286a37d425196ec70b8c5bd012b.setOption(option_45c2e286a37d425196ec70b8c5bd012b);
-    </script>
+<iframe src="pie.html" frameborder="no"></iframe>
+<iframe src="bar.html" frameborder="no"></iframe>
 </body>
 </html>

@@ -60,7 +60,8 @@ def predict(classifier, text):
         neg += 1
     elif classifier.classify(text) == '推荐':
         pos += 1
-
+    global textaaa
+    textaaa = classifier.classify(text)
 
 
 if __name__ == '__main__':
