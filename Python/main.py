@@ -16,13 +16,13 @@ headers = {
 #训练集获取
 def Get_train(appid):
     flag = 0
-    with open('reviews/pos.txt', "w+") as f:  # 训练集可持续化，读取上次写文件名，这次接着来
+    with open('reviews/pos.txt', "r") as f:  # 训练集可持续化，读取上次写文件名，这次接着来
         total_reviews_ups = f.read()
     if total_reviews_ups == '':
         total_reviews_up = 0
     else:
         total_reviews_up = int(total_reviews_ups)
-    with open('reviews/neg.txt', "w+") as f:  # 训练集可持续化
+    with open('reviews/neg.txt', "r") as f:  # 训练集可持续化
         total_reviews_downs = f.read()
     if total_reviews_downs == '':
         total_reviews_down = 0
@@ -31,6 +31,7 @@ def Get_train(appid):
     for a in range(0,2):
         if flag == 0:
             url = 'https://store.steampowered.com/appreviews/%s?json=1&language=schinese&num_per_page=100'%appid
+            #url = 'https://store.steampowered.com/appreviews/%s?json=1&language=schinese&num_per_page=100&review_type=negative'%appid
             page = requests.get(url, headers=headers).text.encode('utf-8')
             Content = json.loads(page)
             RecNum = Content['query_summary']['total_reviews']  #简中评论总条数
@@ -39,33 +40,16 @@ def Get_train(appid):
             print('共'+ str(Pagenum) +'页评论')
             print('正在进行第1页评论爬取')
             for b in range(0, len(Content['reviews'])):
-                if Content['reviews'][b]['voted_up'] == True:
-                    one_review = Content['reviews'][b]['review']
-                    one_review_over = re.compile('\[h1]|\[/h1]|\n|\t|\[b]|\[/b]', re.I).sub('', one_review)
-                    with open(r'C:\Users\Aris\AppData\Local\Programs\Python\Python38\Lib\site-packages\pyhanlp\static\data\test\reviews/推荐/pos.' + str(total_reviews_up) + '.txt', 'w', encoding='utf-8') as f:
-                        f.write(one_review_over)
-                    total_reviews_up += 1
-                    with open('reviews/pos.txt', 'w+', encoding='utf-8') as f:
-                        f.write(str(total_reviews_up))
-                elif Content['reviews'][b]['voted_up'] == False:
-                    one_review = Content['reviews'][b]['review']
-                    one_review_over = re.compile('\[h1]|\[/h1]|\n|\t|\[b]|\[/b]', re.I).sub('', one_review)
-                    with open(r'C:\Users\Aris\AppData\Local\Programs\Python\Python38\Lib\site-packages\pyhanlp\static\data\test\reviews/不推荐/neg.' + str(total_reviews_down) + '.txt', 'w', encoding='utf-8') as f:
-                        f.write(one_review_over)
-                    total_reviews_down += 1
-                    with open('reviews/neg.txt', 'w+', encoding='utf-8') as f:
-                        f.write(str(total_reviews_down))
-            print(total_reviews_up)
-            print(total_reviews_down)
-            flag = 1
-        elif flag == 1:
-            for c in range(2, 50): #爬取页数
-                url = 'https://store.steampowered.com/appreviews/%s?json=1&language=schinese&num_per_page=100&cursor=%s' %(appid, cursor)
-                page = requests.get(url, headers=headers).text.encode('utf-8')
-                Content = json.loads(page)
-                cursor = parse.quote(Content['cursor']) # 将cursor 进行 url编码
-                print('正在进行第' + str(c) + '页评论爬取')
-                for b in range(0, len(Content['reviews'])):
+                if b <20 :
+                    if Content['reviews'][b]['voted_up'] == True:
+                        with open('reviews/pos_test.csv', 'a+', encoding='utf-8', newline='') as f:
+                            writer = csv.writer(f)
+                            writer.writerow(Content['reviews'][b]['review'])
+                    elif Content['reviews'][b]['voted_up'] == False:
+                        with open('reviews/neg_test.csv', 'a+', encoding='utf-8', newline='') as f:
+                            writer = csv.writer(f)
+                            writer.writerow(Content['reviews'][b]['review'])
+                else:
                     if Content['reviews'][b]['voted_up'] == True:
                         one_review = Content['reviews'][b]['review']
                         one_review_over = re.compile('\[h1]|\[/h1]|\n|\t|\[b]|\[/b]', re.I).sub('', one_review)
@@ -77,11 +61,49 @@ def Get_train(appid):
                     elif Content['reviews'][b]['voted_up'] == False:
                         one_review = Content['reviews'][b]['review']
                         one_review_over = re.compile('\[h1]|\[/h1]|\n|\t|\[b]|\[/b]', re.I).sub('', one_review)
-                        with open(r'C:\Users\Aris\AppData\Local\Programs\Python\Python38\Lib\site-packages\pyhanlp\static\data\test\reviews/不推荐/neg.' + str(total_reviews_down) + '.txt', 'w',encoding='utf-8') as f:
+                        with open(r'C:\Users\Aris\AppData\Local\Programs\Python\Python38\Lib\site-packages\pyhanlp\static\data\test\reviews/不推荐/neg.' + str(total_reviews_down) + '.txt', 'w', encoding='utf-8') as f:
                             f.write(one_review_over)
                         total_reviews_down += 1
                         with open('reviews/neg.txt', 'w+', encoding='utf-8') as f:
                             f.write(str(total_reviews_down))
+            print(total_reviews_up)
+            print(total_reviews_down)
+            flag = 1
+        elif flag == 1:
+            for c in range(2, 50): #爬取页数
+                url = 'https://store.steampowered.com/appreviews/%s?json=1&language=schinese&num_per_page=100&cursor=%s' %(appid, cursor)
+                #url = 'https://store.steampowered.com/appreviews/%s?json=1&language=schinese&num_per_page=100&review_type=negative&cursor=%s' %(appid, cursor)
+                page = requests.get(url, headers=headers).text.encode('utf-8')
+                Content = json.loads(page)
+                cursor = parse.quote(Content['cursor']) # 将cursor 进行 url编码
+                print('正在进行第' + str(c) + '页评论爬取')
+                for b in range(0, len(Content['reviews'])):
+                    if b < 20:
+                        if Content['reviews'][b]['voted_up'] == True:
+                            with open('reviews/pos_test.csv', 'a+', encoding='utf-8', newline='') as f:
+                                writer = csv.writer(f)
+                                writer.writerow(Content['reviews'][b]['review'])
+                        elif Content['reviews'][b]['voted_up'] == False:
+                            with open('reviews/neg_test.csv', 'a+', encoding='utf-8', newline='') as f:
+                                writer = csv.writer(f)
+                                writer.writerow(Content['reviews'][b]['review'])
+                    else:
+                        if Content['reviews'][b]['voted_up'] == True:
+                            one_review = Content['reviews'][b]['review']
+                            one_review_over = re.compile('\[h1]|\[/h1]|\n|\t|\[b]|\[/b]', re.I).sub('', one_review)
+                            with open(r'C:\Users\Aris\AppData\Local\Programs\Python\Python38\Lib\site-packages\pyhanlp\static\data\test\reviews/推荐/pos.' + str(total_reviews_up) + '.txt', 'w', encoding='utf-8') as f:
+                                f.write(one_review_over)
+                            total_reviews_up += 1
+                            with open('reviews/pos.txt', 'w+', encoding='utf-8') as f:
+                                f.write(str(total_reviews_up))
+                        elif Content['reviews'][b]['voted_up'] == False:
+                            one_review = Content['reviews'][b]['review']
+                            one_review_over = re.compile('\[h1]|\[/h1]|\n|\t|\[b]|\[/b]', re.I).sub('', one_review)
+                            with open(r'C:\Users\Aris\AppData\Local\Programs\Python\Python38\Lib\site-packages\pyhanlp\static\data\test\reviews/不推荐/neg.' + str(total_reviews_down) + '.txt', 'w',encoding='utf-8') as f:
+                                f.write(one_review_over)
+                            total_reviews_down += 1
+                            with open('reviews/neg.txt', 'w+', encoding='utf-8') as f:
+                                f.write(str(total_reviews_down))
                 print(total_reviews_up,total_reviews_down)
         print('pos共' + str(total_reviews_up) + '条数据，neg共' + str(total_reviews_down) + '条数据')
 
@@ -102,7 +124,7 @@ def Get_review(appid):
             total_reviews = []
             for b in range(0,len(Content['reviews'])):
                 one_review = Content['reviews'][b]['review']
-                one_review_over = re.compile('\n',re.I).sub('',one_review)  #正则处理单条评论
+                one_review_over = re.compile('\[h1]|\[/h1]|\n|\t|\[b]|\[/b]', re.I).sub('',one_review)  #正则处理单条评论
                 #one_review_over = re.compile('[b]',re.I).sub('',one_review_over)
                 #one_review_over = re.compile('[/b]',re.I).sub('',one_review_over)
                 total_reviews.append(one_review_over)  #将评论加入总评论列表
@@ -170,13 +192,12 @@ def Clear_review():
         text = text + reviews[0][xxx]+ '\n'
     with open('reviews_over.txt', 'w', encoding='UTF-8') as f:  # 设置文件对象
         f.write(text)  # 将字符串写入文件中
+
 # 训练
 def Training():
     classifier = sa.NaiveBayesClassifier()  # 创建分类器，更高级的功能请参考IClassifier的接口定义
     classifier.train(sa.chn_senti_corp)  # 训练后的模型支持持久化，下次就不必训练了
     return classifier
-
-
 
 # 应用模型对爬取的评论进行分析
 def Predict(classifier):
@@ -184,11 +205,14 @@ def Predict(classifier):
     for xx in range(0,len(reviews)):
         sa.predict(classifier,reviews[0][xx])
     print('有'+str(sa.pos)+'人,'+str(sa.pos/(sa.pos+sa.neg)*100)+'%,''的人推荐购买这个游戏,'+str(sa.neg)+'人,'+str(sa.neg/(sa.pos+sa.neg)*100)+'%的人不推荐购买这个游戏,')
-    if sa.pos > sa.neg:
+    if sa.pos/(sa.pos+sa.neg)*100 > 70:
         print('总之，这个游戏买就对了，绝对不亏！')
-    else:
+    elif sa.pos/(sa.pos+sa.neg)*100 < 70 and sa.pos/(sa.pos+sa.neg)*100 > 50:
         print('买前请三思，推荐度仅为'+str(sa.pos/(sa.pos+sa.neg)*100)+'%')
+    else:
+        print('不推荐购买，推荐度仅为'+str(sa.pos/(sa.pos+sa.neg)*100)+'%')
 
+#def Predict_test(classifier):
 
 
 #可视化
@@ -224,7 +248,7 @@ def Pycharts():
             continue
         stop_words.append(line)
     stop_f.close
-    DIY_stopwords = ['一个','没有','说','玩','做','里','中','-','⣿','','感','spoiler','2','点','完','·','\\','4','走','一款',"'",'会','没',',','游戏','帧']
+    DIY_stopwords = ['一个','没有','说','玩','做','里','中','-','⣿','','感','spoiler','2','点','完','·','\\','4','走','一款',"'",'会','没',',','游戏','帧','/']
     for line in range(0,len(DIY_stopwords)):
         stop_words.append(DIY_stopwords[line])
     words2 = [word for word in words1 if word not in stop_words] #停用词
@@ -294,19 +318,14 @@ def Pycharts():
 
     webbrowser.open('file:///F:/Project/WorkSpace/2077CommentAnalyze/Python/html/index.html')
 
-
-
-
-
-
-
 if __name__ == '__main__':
-    #Get_train(1174180)
+    #Get_train(271590)
     #Get_review(1091500) # 评论爬取
     #Clear_review()  # 去重
     #进行推荐度分析：
     classifier = Training()
-    Predict(classifier)
+    #Predict_test(classifier) #进行数据评价
+    Predict(classifier)  #应用模型进行分析
     Pycharts() #生成可视化图表
 
 
