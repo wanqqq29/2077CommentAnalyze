@@ -1,0 +1,5 @@
+requests==2.25.0
+pyhanlp==0.1.66
+jieba==0.42.1
+pandas==1.2.0
+pyecharts==1.9.0
