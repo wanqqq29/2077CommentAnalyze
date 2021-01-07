@@ -129,13 +129,12 @@ def Get_review(appid):
             print('第1页评论爬取完成')
             # print(total_reviews)
             #写入csv
-            with open('reviews.csv', 'a+', encoding='utf-8', newline='') as f:
+            with open('2077origin.csv', 'a+', encoding='utf-8', newline='') as f:
                 for i in total_reviews:
                     pice += 1
                     writer = csv.writer(f)
                     writer.writerow([i])
                 print('成功写入' + str(pice) + '条')
-            time.sleep(1)
             flag = 1
         elif flag == 1:
             for c in range(2,Pagenum-2):  #爬取页数
@@ -154,7 +153,7 @@ def Get_review(appid):
                     print('第' + str(c) + '页评论爬取完成')
                     # print(total_reviews)
                     # 写入csv
-                    with open('reviews.csv', 'a+', encoding='utf-8', newline='') as f:
+                    with open('2077origin.csv', 'a+', encoding='utf-8', newline='') as f:
                         for i in total_reviews:
                             pice += 1
                             writer = csv.writer(f)
@@ -165,7 +164,7 @@ def Get_review(appid):
                     print('第' + str(c) + '页评论爬取完成')
                     #print(total_reviews)
                     # 写入csv
-                    with open('reviews.csv', 'a+', encoding='utf-8', newline='') as f:
+                    with open('2077origin.csv', 'a+', encoding='utf-8', newline='') as f:
                         for i in total_reviews:
                             pice += 1
                             writer = csv.writer(f)
@@ -175,18 +174,18 @@ def Get_review(appid):
 
 # 评论处理 去重
 def Clear_review():
-    frame = pd.read_csv('reviews.csv', engine='python')
+    frame = pd.read_csv('2077origin.csv', engine='python')
     print('数据集处理前数量' + str(len(frame)))
     data = frame.drop_duplicates(keep='first', inplace=False)
-    data.to_csv('reviews_over.csv', encoding='utf8',index=None)
-    frame2 = pd.read_csv('reviews_over.csv', engine='python')
+    data.to_csv('2077.csv', encoding='utf8',index=None)
+    frame2 = pd.read_csv('2077.csv', engine='python')
     print('数据集处理后数量' + str(len(frame2)))
     # subset: column label or sequence of labels, optional    用来指定特定的列，默认所有列
     # keep: {‘first’, ‘last’, False}, default ‘first’ 删除重复项并保留第一次出现的项
     # inplace: boolean, default False 是直接在原来数据上修改还是保留一个副本
     # 数据存入txt
     text = ''
-    reviews = pd.read_csv('reviews_over.csv', engine='python', header=None, encoding='utf-8')  # pd读取处理完的评论
+    reviews = pd.read_csv('2077.csv', engine='python', header=None, encoding='utf-8')  # pd读取处理完的评论
     for xxx in range(0, len(reviews)):
         text = text + reviews[0][xxx]+ '\n'
     with open('reviews_over.txt', 'w', encoding='UTF-8') as f:  # 设置文件对象
@@ -209,7 +208,7 @@ def Training():
 
 # 应用模型对爬取的评论进行分析
 def Predict(classifier):
-    reviews = pd.read_csv('reviews_over.csv', engine='python', header=None, encoding='utf-8') #pd读取处理完的评论
+    reviews = pd.read_csv('2077.csv', engine='python', header=None, encoding='utf-8') #pd读取处理完的评论
     for xx in range(0,len(reviews)):
         sa.predict(classifier,reviews[0][xx])
     print('有'+str(sa.pos)+'人,'+str(sa.pos/(sa.pos+sa.neg)*100)+'%,''的人推荐购买这个游戏,'+str(sa.neg)+'人,'+str(sa.neg/(sa.pos+sa.neg)*100)+'%的人不推荐购买这个游戏,')
@@ -362,13 +361,13 @@ def Pycharts():
 
 if __name__ == '__main__':
     #Get_train(646910)
-    #Get_review(1091500) # 评论爬取
-    #Clear_review()  # 去重x
+    Get_review(635260) # 评论爬取
+    Clear_review()  # 去重x
     #进行推荐度分析：
-    classifier = Training()
-    Predict_test(classifier) #进行数据评价
-    Predict(classifier)  #应用模型进行分析
-    Pycharts() #生成可视化图表
+    #classifier = Training()
+    #Predict_test(classifier) #进行数据评价
+    #Predict(classifier)  #应用模型进行分析
+    #Pycharts() #生成可视化图表
 
 
 
