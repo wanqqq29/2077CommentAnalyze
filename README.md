@@ -1,2 +1,2 @@
 # 2077CommentAnalyze
-## 
+从steam上爬取2077的评论，并使用Hanlp语义分析接口做出情感分析
